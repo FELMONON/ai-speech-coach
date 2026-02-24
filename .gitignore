@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+
+# Env
+.env
+.env.*
+!.env.example
+frontend/.env.local
+backend/.env
+
+# Node / Next
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/prisma/dev.db*
+
+# Python
+backend/.venv
+backend/__pycache__
+backend/**/*.pyc
+
+# Database
+*.db
+backend/data/
+
+# Logs
+*.log
+.runlogs/
