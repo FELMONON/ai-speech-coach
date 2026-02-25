@@ -31,10 +31,24 @@ function clock(s: number) {
   return `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 }
 
+async function persistSessionEvent(payload: Record<string, unknown>) {
+  try {
+    await fetch("/api/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      cache: "no-store"
+    });
+  } catch {
+    // Best-effort persistence.
+  }
+}
+
 export function CoachingSession() {
   const stateRef = useRef<SessionState>("idle");
   const startingRef = useRef(false);
   const convIdRef = useRef<string | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
 
   const [sessionState, setSessionState] = useState<SessionState>("idle");
   const [exerciseType, setExerciseType] = useState<ExerciseType>("free_talk");
@@ -59,11 +73,20 @@ export function CoachingSession() {
     setState("connecting");
 
     try {
-      const conv = await createTavusConversation({ sessionId: uid(), exerciseType });
+      const sessionId = uid();
+      const conv = await createTavusConversation({ sessionId, exerciseType });
+      sessionIdRef.current = sessionId;
       convIdRef.current = conv.conversationId;
       setTavusUrl(conv.conversationUrl);
+      await persistSessionEvent({
+        action: "start",
+        sessionId,
+        exerciseType,
+        startedAt: new Date().toISOString()
+      });
       setState("running");
     } catch (e) {
+      sessionIdRef.current = null;
       convIdRef.current = null;
       setTavusUrl(null);
       setState("idle");
@@ -79,14 +102,26 @@ export function CoachingSession() {
     setIframeLoaded(false);
 
     const id = convIdRef.current;
+    const sessionId = sessionIdRef.current;
     convIdRef.current = null;
+    sessionIdRef.current = null;
     setTavusUrl(null);
 
     if (id) {
       try { await endTavusConversation(id); } catch { /* ignore */ }
     }
+
+    if (sessionId) {
+      await persistSessionEvent({
+        action: "end",
+        sessionId,
+        endedAt: new Date().toISOString(),
+        notes: `Tavus session duration ${clock(elapsed)}`
+      });
+    }
+
     if (!isUnmount) setState("ended");
-  }, [setState]);
+  }, [elapsed, setState]);
 
   useEffect(() => {
     if (sessionState !== "running") return;
