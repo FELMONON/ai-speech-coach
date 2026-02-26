@@ -40,7 +40,7 @@ ai-speech-coach/
 ```bash
 TAVUS_API_KEY=your_tavus_api_key
 TAVUS_PERSONA_ID=your_tavus_persona_id
-DATABASE_URL=file:./dev.db
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DB_NAME?schema=public
 ```
 
 ## Local Development
@@ -59,7 +59,7 @@ Open `http://localhost:3000`, then visit `/session`.
 
 - Tavus API key and persona id must be configured as Vercel project env vars.
 - For durable production history, use a hosted database for `DATABASE_URL`.
-- SQLite (`file:./dev.db`) is for local development only.
+- Supabase or Neon Postgres URLs work well for `DATABASE_URL`.
 
 ## References
 
