@@ -23,6 +23,18 @@ const features = [
   },
 ];
 
+const quickStats = [
+  { value: "7", label: "Practice modes" },
+  { value: "Live", label: "AI coaching calls" },
+  { value: "~2 min", label: "To run a drill" },
+];
+
+const flow = [
+  { title: "Pick a drill", desc: "Choose your exercise based on what you want to improve today." },
+  { title: "Join live coaching", desc: "Coach Alex joins instantly in a real conversation experience." },
+  { title: "Track your growth", desc: "Review your sessions in History and spot your speaking trends." },
+];
+
 export default function LandingPage() {
   return (
     <main className="hero-section">
@@ -69,6 +81,15 @@ export default function LandingPage() {
         </Link>
       </div>
 
+      <div className="hero-stats" aria-label="Quick platform highlights">
+        {quickStats.map((stat) => (
+          <div key={stat.label} className="hero-stat-card">
+            <p className="hero-stat-value">{stat.value}</p>
+            <p className="hero-stat-label">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
       {/* Features */}
       <div className="feature-grid">
         {features.map((f) => (
@@ -77,6 +98,16 @@ export default function LandingPage() {
             <h3 className="feature-title">{f.title}</h3>
             <p className="feature-desc">{f.desc}</p>
           </div>
+        ))}
+      </div>
+
+      <div className="flow-grid" aria-label="How it works">
+        {flow.map((item, index) => (
+          <article key={item.title} className="flow-card">
+            <span className="flow-step">0{index + 1}</span>
+            <h3 className="flow-title">{item.title}</h3>
+            <p className="flow-desc">{item.desc}</p>
+          </article>
         ))}
       </div>
 

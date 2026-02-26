@@ -424,6 +424,47 @@ body::before {
   filter: grayscale(0);
 }
 
+.exercise-preview {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-default);
+  background: rgba(11, 16, 24, 0.65);
+  text-align: left;
+}
+
+.exercise-preview-label {
+  margin: 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.exercise-preview-title {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: var(--font-size-sm);
+  color: var(--amber-300);
+  font-weight: 600;
+}
+
+.exercise-preview-goal,
+.exercise-preview-cue {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.55;
+}
+
+.exercise-preview-goal {
+  color: var(--color-text-secondary);
+}
+
+.exercise-preview-cue {
+  color: var(--slate-300);
+}
+
 /* ═══════════════════════════════════════════════
    SESSION — Live View
    ═══════════════════════════════════════════════ */
@@ -464,6 +505,44 @@ body::before {
   height: 100%;
   border: 0;
   object-fit: cover;
+}
+
+.session-hud {
+  position: absolute;
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 14;
+  max-width: min(360px, calc(100vw - 2rem));
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-default);
+  background: rgba(8, 12, 20, 0.78);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-md);
+}
+
+.session-hud-title {
+  margin: 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--amber-300);
+}
+
+.session-hud-text {
+  margin: var(--space-2) 0 0;
+  color: var(--slate-100);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.session-hud-shortcut {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.04em;
 }
 
 .session-bottombar {
@@ -730,6 +809,25 @@ body::before {
   background: var(--color-interactive-muted);
 }
 
+@media (max-width: 560px) {
+  .main-nav-inner {
+    padding: var(--space-3);
+  }
+
+  .nav-brand {
+    font-size: var(--font-size-xs);
+  }
+
+  .nav-links {
+    gap: 0;
+  }
+
+  .nav-link {
+    padding: 6px 10px;
+    font-size: var(--font-size-xs);
+  }
+}
+
 /* ═══════════════════════════════════════════════
    LANDING PAGE
    ═══════════════════════════════════════════════ */
@@ -841,6 +939,42 @@ body::before {
   animation: descIn 0.6s var(--ease-dramatic) 0.3s both;
 }
 
+.hero-stats {
+  margin-top: var(--space-8);
+  width: 100%;
+  max-width: 760px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  animation: descIn 0.6s var(--ease-dramatic) 0.35s both;
+}
+
+.hero-stat-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  background: rgba(15, 20, 31, 0.52);
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.hero-stat-value {
+  margin: 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  color: var(--amber-300);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hero-stat-label {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: var(--font-display), system-ui, sans-serif;
+}
+
 .feature-grid {
   margin-top: var(--space-24);
   display: grid;
@@ -923,6 +1057,59 @@ body::before {
   letter-spacing: 0.04em;
 }
 
+.flow-grid {
+  margin-top: var(--space-10);
+  width: 100%;
+  max-width: 880px;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  animation: descIn 0.6s var(--ease-dramatic) 0.5s both;
+}
+
+.flow-card {
+  position: relative;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  background: linear-gradient(140deg, rgba(21, 28, 43, 0.55), rgba(11, 16, 24, 0.85));
+  padding: var(--space-5);
+}
+
+.flow-step {
+  display: inline-flex;
+  min-width: 34px;
+  height: 24px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  align-items: center;
+  justify-content: center;
+  background: rgba(226, 164, 69, 0.12);
+  color: var(--amber-300);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.flow-title {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: var(--font-size-base);
+  color: var(--slate-100);
+}
+
+.flow-desc {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+@media (min-width: 720px) {
+  .flow-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 /* ═══════════════════════════════════════════════
    ERROR TOAST
    ═══════════════════════════════════════════════ */
@@ -953,4 +1140,12 @@ body::before {
   .setup-card { padding: var(--space-6) var(--space-5); }
   .completed-card { padding: var(--space-8) var(--space-5); }
   .hero-title { font-size: var(--font-size-3xl); }
+  .hero-stats { grid-template-columns: 1fr; }
+  .session-hud {
+    left: var(--space-3);
+    right: var(--space-3);
+    max-width: none;
+    bottom: var(--space-3);
+    padding: var(--space-3);
+  }
 }

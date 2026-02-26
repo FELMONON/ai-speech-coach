@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createTavusConversation, endTavusConversation } from "@/lib/tavus";
 import type { ExerciseType } from "@/lib/types";
 import Link from "next/link";
@@ -11,16 +11,18 @@ interface Exercise {
   id: ExerciseType;
   label: string;
   icon: string;
+  goal: string;
+  cue: string;
 }
 
 const EXERCISES: Exercise[] = [
-  { id: "free_talk", label: "Free Talk", icon: "💬" },
-  { id: "elevator_pitch", label: "Pitch", icon: "🎯" },
-  { id: "storytelling", label: "Story", icon: "📖" },
-  { id: "impromptu", label: "Improv", icon: "⚡" },
-  { id: "eye_contact_drill", label: "Eye Contact", icon: "👁" },
-  { id: "filler_word_elimination", label: "No Fillers", icon: "🚫" },
-  { id: "power_pause", label: "Power Pause", icon: "⏸" },
+  { id: "free_talk", label: "Free Talk", icon: "💬", goal: "Warm up your natural speaking style with live feedback.", cue: "Tell Coach Alex what you are building this week." },
+  { id: "elevator_pitch", label: "Pitch", icon: "🎯", goal: "Deliver a concise and high-impact 60-second pitch.", cue: "Start with problem, solution, and one clear outcome." },
+  { id: "storytelling", label: "Story", icon: "📖", goal: "Improve pacing, structure, and emotional delivery.", cue: "Use a beginning, turning point, and ending." },
+  { id: "impromptu", label: "Improv", icon: "⚡", goal: "Build confidence under pressure with instant prompts.", cue: "Answer without overthinking. Keep momentum high." },
+  { id: "eye_contact_drill", label: "Eye Contact", icon: "👁", goal: "Train a confident camera presence while speaking.", cue: "Hold eye contact through each full sentence." },
+  { id: "filler_word_elimination", label: "No Fillers", icon: "🚫", goal: "Reduce filler words by replacing them with pauses.", cue: "Pause for one beat before key points." },
+  { id: "power_pause", label: "Power Pause", icon: "⏸", goal: "Use strategic silence to make ideas land stronger.", cue: "Insert a 2-second pause before key statements." },
 ];
 
 function uid() {
@@ -56,6 +58,10 @@ export function CoachingSession() {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const activeExercise = useMemo(
+    () => EXERCISES.find((exercise) => exercise.id === exerciseType) ?? EXERCISES[0],
+    [exerciseType]
+  );
 
   const setState = useCallback((v: SessionState) => {
     stateRef.current = v;
@@ -130,6 +136,19 @@ export function CoachingSession() {
   }, [sessionState]);
 
   useEffect(() => {
+    if (sessionState !== "running") return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        void endSession();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [endSession, sessionState]);
+
+  useEffect(() => {
     return () => { void endSession(true); };
   }, [endSession]);
 
@@ -168,6 +187,13 @@ export function CoachingSession() {
                 {ex.label}
               </button>
             ))}
+          </div>
+
+          <div className="exercise-preview" aria-live="polite">
+            <p className="exercise-preview-label">Selected Focus</p>
+            <p className="exercise-preview-title">{activeExercise.icon} {activeExercise.label}</p>
+            <p className="exercise-preview-goal">{activeExercise.goal}</p>
+            <p className="exercise-preview-cue">Try this opener: {activeExercise.cue}</p>
           </div>
 
           <button
@@ -259,7 +285,7 @@ export function CoachingSession() {
         <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)" }}>
           <span className="timer-display">{clock(elapsed)}</span>
           <span className="exercise-label hidden sm:inline">
-            {EXERCISES.find((e) => e.id === exerciseType)?.label ?? "Free Talk"}
+            {activeExercise.label}
           </span>
         </div>
       </div>
@@ -286,6 +312,12 @@ export function CoachingSession() {
             <p className="connecting-text">Connecting to Coach Alex&hellip;</p>
           </div>
         )}
+
+        <div className="session-hud" aria-hidden={sessionState !== "running"}>
+          <p className="session-hud-title">Live Prompt</p>
+          <p className="session-hud-text">{activeExercise.cue}</p>
+          <p className="session-hud-shortcut">Press Esc to end session</p>
+        </div>
       </div>
 
       {/* ── Bottom Bar ── */}
