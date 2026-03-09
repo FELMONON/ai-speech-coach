@@ -54,6 +54,7 @@ export function CoachingSession() {
   const startingRef = useRef(false);
   const convIdRef = useRef<string | null>(null);
   const sessionIdRef = useRef<string | null>(null);
+  const elapsedRef = useRef(0);
 
   const [sessionState, setSessionState] = useState<SessionState>("idle");
   const [exerciseType, setExerciseType] = useState<ExerciseType>("free_talk");
@@ -132,18 +133,22 @@ export function CoachingSession() {
         action: "end",
         sessionId,
         endedAt: new Date().toISOString(),
-        notes: `Tavus session duration ${clock(elapsed)}`
+        notes: `Tavus session duration ${clock(elapsedRef.current)}`
       });
     }
 
     if (!isUnmount) setState("ended");
-  }, [elapsed, setState]);
+  }, [setState]);
 
   useEffect(() => {
     if (sessionState !== "running") return;
     const i = window.setInterval(() => setElapsed((v) => v + 1), 1000);
     return () => window.clearInterval(i);
   }, [sessionState]);
+
+  useEffect(() => {
+    elapsedRef.current = elapsed;
+  }, [elapsed]);
 
   useEffect(() => {
     if (sessionState !== "running" || !tavusUrl || iframeLoaded) {
