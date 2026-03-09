@@ -25,6 +25,9 @@ const EXERCISES: Exercise[] = [
   { id: "power_pause", label: "Power Pause", icon: "⏸", goal: "Use strategic silence to make ideas land stronger.", cue: "Insert a 2-second pause before key statements." },
 ];
 
+const EMBED_READY_FALLBACK_MS = 5000;
+const SHOW_OPEN_IN_TAB_MS = 8000;
+
 function uid() {
   return globalThis.crypto?.randomUUID?.() ?? `s-${Date.now()}`;
 }
@@ -56,12 +59,15 @@ export function CoachingSession() {
   const [exerciseType, setExerciseType] = useState<ExerciseType>("free_talk");
   const [tavusUrl, setTavusUrl] = useState<string | null>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [embedFallbackReady, setEmbedFallbackReady] = useState(false);
+  const [showOpenInTab, setShowOpenInTab] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const activeExercise = useMemo(
     () => EXERCISES.find((exercise) => exercise.id === exerciseType) ?? EXERCISES[0],
     [exerciseType]
   );
+  const sessionJoined = iframeLoaded || embedFallbackReady;
 
   const setState = useCallback((v: SessionState) => {
     stateRef.current = v;
@@ -75,6 +81,8 @@ export function CoachingSession() {
     startingRef.current = true;
     setError(null);
     setIframeLoaded(false);
+    setEmbedFallbackReady(false);
+    setShowOpenInTab(false);
     setElapsed(0);
     setState("connecting");
 
@@ -106,6 +114,8 @@ export function CoachingSession() {
     if (stateRef.current === "ending" || stateRef.current === "idle") return;
     setState("ending");
     setIframeLoaded(false);
+    setEmbedFallbackReady(false);
+    setShowOpenInTab(false);
 
     const id = convIdRef.current;
     const sessionId = sessionIdRef.current;
@@ -134,6 +144,22 @@ export function CoachingSession() {
     const i = window.setInterval(() => setElapsed((v) => v + 1), 1000);
     return () => window.clearInterval(i);
   }, [sessionState]);
+
+  useEffect(() => {
+    if (sessionState !== "running" || !tavusUrl || iframeLoaded) {
+      setEmbedFallbackReady(false);
+      setShowOpenInTab(false);
+      return;
+    }
+
+    const readyTimer = window.setTimeout(() => setEmbedFallbackReady(true), EMBED_READY_FALLBACK_MS);
+    const openInTabTimer = window.setTimeout(() => setShowOpenInTab(true), SHOW_OPEN_IN_TAB_MS);
+
+    return () => {
+      window.clearTimeout(readyTimer);
+      window.clearTimeout(openInTabTimer);
+    };
+  }, [iframeLoaded, sessionState, tavusUrl]);
 
   useEffect(() => {
     if (sessionState !== "running") return;
@@ -276,9 +302,9 @@ export function CoachingSession() {
       <div className="session-topbar">
         <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
           <span className="coach-label">Coach Alex</span>
-          <span className={`status-pill ${sessionState === "running" && iframeLoaded ? "live" : "connecting"}`}>
-            <span className={`dot ${sessionState === "running" && iframeLoaded ? "breathing" : "pulse"}`} />
-            {sessionState === "connecting" ? "Connecting" : iframeLoaded ? "Live" : "Joining"}
+          <span className={`status-pill ${sessionState === "running" && sessionJoined ? "live" : "connecting"}`}>
+            <span className={`dot ${sessionState === "running" && sessionJoined ? "breathing" : "pulse"}`} />
+            {sessionState === "connecting" ? "Connecting" : sessionJoined ? "Live" : "Joining"}
           </span>
         </div>
 
@@ -296,7 +322,11 @@ export function CoachingSession() {
           <iframe
             src={tavusUrl}
             allow="camera; microphone; autoplay; fullscreen; clipboard-write"
-            onLoad={() => setIframeLoaded(true)}
+            onLoad={() => {
+              setIframeLoaded(true);
+              setEmbedFallbackReady(false);
+              setShowOpenInTab(false);
+            }}
             title="Live Coaching Session"
           />
         ) : (
@@ -306,11 +336,22 @@ export function CoachingSession() {
           </div>
         )}
 
-        {tavusUrl && !iframeLoaded && (
+        {tavusUrl && !sessionJoined && (
           <div className="connecting-overlay">
             <div className="connecting-spinner" />
             <p className="connecting-text">Connecting to Coach Alex&hellip;</p>
           </div>
+        )}
+
+        {showOpenInTab && tavusUrl && !iframeLoaded && (
+          <a
+            href={tavusUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="session-open-tab"
+          >
+            Open session in a new tab
+          </a>
         )}
 
         <div className="session-hud" aria-hidden={sessionState !== "running"}>
