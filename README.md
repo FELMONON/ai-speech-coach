@@ -43,6 +43,8 @@ TAVUS_PERSONA_ID=your_tavus_persona_id
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DB_NAME?schema=public
 ```
 
+`TAVUS_PERSONA_ID` must belong to the same Tavus account/workspace as `TAVUS_API_KEY`. The app no longer falls back to a built-in persona ID.
+
 ## Local Development
 
 ```bash
@@ -57,7 +59,7 @@ Open `http://localhost:3000`, then visit `/session`.
 
 ## Vercel Production Notes
 
-- Tavus API key and persona id must be configured as Vercel project env vars.
+- Tavus API key and persona id must be configured as Vercel project env vars and must come from the same Tavus workspace.
 - For durable production history, use a hosted database for `DATABASE_URL`.
 - Supabase or Neon Postgres URLs work well for `DATABASE_URL`.
 

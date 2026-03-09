@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-const DEFAULT_PERSONA_ID = "p3ef12851854";
-
 interface TavusCreateResponse {
   conversation_id?: string;
   conversation_url?: string;
   status?: string;
+  error?: string;
+  message?: string;
 }
 
 interface TavusConversationRecord {
@@ -65,7 +65,7 @@ async function callTavus(apiKey: string, body: Record<string, unknown>) {
     cache: "no-store",
   });
   const raw = await response.text();
-  return { response, raw, parsed: parseJson<TavusCreateResponse & { error?: string }>(raw) };
+  return { response, raw, parsed: parseJson<TavusCreateResponse>(raw) };
 }
 
 async function cleanupOldConversation(apiKey: string) {
@@ -99,12 +99,20 @@ function isConcurrentLimit(status: number, raw: string) {
   return status === 429 || raw.toLowerCase().includes("maximum concurrent conversations");
 }
 
+function isInvalidPersona(message: string) {
+  return message.toLowerCase().includes("invalid persona_id");
+}
+
 export async function POST(request: NextRequest) {
   const apiKey = process.env.TAVUS_API_KEY;
-  const personaId = process.env.TAVUS_PERSONA_ID ?? DEFAULT_PERSONA_ID;
+  const personaId = process.env.TAVUS_PERSONA_ID;
 
   if (!hasValue(apiKey)) {
     return NextResponse.json({ error: "TAVUS_API_KEY is not configured" }, { status: 503 });
+  }
+
+  if (!hasValue(personaId)) {
+    return NextResponse.json({ error: "TAVUS_PERSONA_ID is not configured" }, { status: 503 });
   }
 
   let body: { sessionId?: string; exerciseType?: string } = {};
@@ -133,7 +141,16 @@ export async function POST(request: NextRequest) {
     }
 
     if (!attempt.response.ok) {
-      const msg = attempt.parsed?.error || attempt.raw || "Unable to create Tavus conversation";
+      const msg =
+        attempt.parsed?.error ?? attempt.parsed?.message ?? attempt.raw ?? "Unable to create Tavus conversation";
+
+      if (isInvalidPersona(msg)) {
+        return NextResponse.json(
+          { error: "Configured TAVUS_PERSONA_ID is invalid for the Tavus account tied to TAVUS_API_KEY" },
+          { status: 503 }
+        );
+      }
+
       return NextResponse.json({ error: msg }, { status: attempt.response.status });
     }
 
